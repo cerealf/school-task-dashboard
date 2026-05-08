@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏫 School Tasks</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #eef2f7;
+      min-height: 100vh;
+      color: #2c3e50;
+    }
+
+    /* Header */
+    header {
+      background: #1a5276;
+      color: white;
+      padding: 14px 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    header h1  { font-size: 17px; font-weight: 700; }
+    header .sub { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+    .icon-btn {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.28); }
+
+    /* Main */
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 16px 16px 60px;
+    }
+
+    /* Setup screen */
+    #setup {
+      background: white;
+      border-radius: 12px;
+      padding: 28px 24px;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    #setup h2 { font-size: 17px; margin-bottom: 10px; color: #1a5276; }
+    #setup p  { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+    #setup ol { font-size: 13px; color: #444; line-height: 1.9; padding-left: 20px; margin-bottom: 20px; }
+    #setup code {
+      background: #eef2f7; padding: 2px 6px; border-radius: 4px;
+      font-family: 'SF Mono', Menlo, monospace; font-size: 12px;
+    }
+    .token-row { display: flex; gap: 8px; }
+    #token-input {
+      flex: 1;
+      border: 1.5px solid #cdd8e3;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: 'SF Mono', Menlo, monospace;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #token-input:focus { border-color: #2471a3; }
+    .btn-primary {
+      background: #1a5276;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover    { background: #154360; }
+    .btn-primary:disabled { opacity: 0.45; cursor: default; }
+
+    /* Section headers */
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 24px 0 10px;
+    }
+    .section-head h2 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      color: white;
+    }
+    .c-overdue  { color: #c0392b; } .p-overdue  { background: #c0392b; }
+    .c-today    { color: #e67e22; } .p-today    { background: #e67e22; }
+    .c-upcoming { color: #2471a3; } .p-upcoming { background: #2471a3; }
+    .c-done     { color: #27ae60; } .p-done     { background: #27ae60; }
+
+    /* Task cards */
+    .task-card {
+      background: white;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .task-card.is-done { opacity: 0.5; }
+    .task-left  { flex: 1; min-width: 0; }
+    .task-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .is-done .task-title { text-decoration: line-through; }
+    .task-meta {
+      font-size: 12px;
+      color: #7f8c8d;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .due-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      color: white;
+    }
+    .done-btn {
+      flex-shrink: 0;
+      background: #eaf4ee;
+      border: 1.5px solid #27ae60;
+      color: #1e8449;
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .done-btn:hover    { background: #27ae60; color: white; }
+    .done-btn:disabled { opacity: 0.4; cursor: default; }
+
+    /* Done toggle */
+    .done-toggle {
+      background: none;
+      border: 1.5px solid #c8d6e5;
+      color: #7f8c8d;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      margin-top: 8px;
+      transition: border-color 0.15s;
+    }
+    .done-toggle:hover { border-color: #27ae60; color: #27ae60; }
+
+    /* Empty / loading */
+    .empty   { text-align: center; padding: 56px 20px; color: #aaa; font-size: 14px; }
+    .big-em  { font-size: 44px; margin-bottom: 12px; }
+    .spinner { text-align: center; padding: 60px 20px; font-size: 13px; color: #aaa; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e8449;
+      color: white;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+      z-index: 100;
+      white-space: nowrap;
+    }
+    #toast.show  { transform: translateX(-50%) translateY(0); }
+    #toast.error { background: #c0392b; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+      margin-top: 36px;
+      padding-top: 16px;
+      border-top: 1px solid #dde4ed;
+    }
+    footer a { color: #aaa; }
+    footer a:hover { color: #c0392b; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>🏫 School Tasks</h1>
+      <div class="sub" id="header-sub">Longfellow TK-8</div>
+    </div>
+    <button class="icon-btn" onclick="loadIssues()" title="Refresh">↻</button>
+  </div>
+</header>
+
+<main>
+  <!-- One-time setup -->
+  <div id="setup" class="hidden">
+    <h2>🔑 One-time setup</h2>
+    <p>A GitHub token is stored in your browser to fetch and close tasks. It never leaves your device.</p>
+    <ol>
+      <li>Go to <strong>github.com → Settings → Developer settings → Fine-grained tokens</strong></li>
+      <li>Click <strong>Generate new token</strong></li>
+      <li>Set repository access to <strong>Only select repositories → cerealf/school-digest-logs</strong></li>
+      <li>Under Permissions → Repository, set <strong>Issues → Read and write</strong></li>
+      <li>Generate and paste the token below</li>
+    </ol>
+    <div class="token-row">
+      <input id="token-input" type="password" placeholder="github_pat_…" autocomplete="off"
+             onkeydown="if(event.key==='Enter') saveToken()">
+      <button class="btn-primary" onclick="saveToken()">Save</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="app" class="hidden">
+    <div id="loading" class="spinner">Loading tasks…</div>
+    <div id="content" class="hidden"></div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+const REPO  = 'cerealf/school-digest-logs';
+const LABEL = 'school-task';
+const KEY   = 'gh_school_token';
+
+/* ── Boot ───────────────────────────────────────────────────── */
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+
+  // ?setup=TOKEN  — store token, clean URL
+  if (params.has('setup')) {
+    localStorage.setItem(KEY, params.get('setup'));
+    params.delete('setup');
+    const qs = params.toString();
+    window.history.replaceState({}, '', qs ? '?' + qs : window.location.pathname);
+  }
+
+  const token = localStorage.getItem(KEY);
+
+  if (!token) {
+    // preserve pending ?close through the setup flow
+    if (params.has('close')) sessionStorage.setItem('pending_close', params.get('close'));
+    document.getElementById('setup').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('app').classList.remove('hidden');
+
+  // ?close=N  — auto-close that issue then show dashboard
+  if (params.has('close')) {
+    window.history.replaceState({}, '', window.location.pathname);
+    await closeIssue(parseInt(params.get('close')));
+  }
+
+  loadIssues();
+})();
+
+/* ── Token setup ────────────────────────────────────────────── */
+function saveToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val) return;
+  localStorage.setItem(KEY, val);
+
+  const pending = sessionStorage.getItem('pending_close');
+  sessionStorage.removeItem('pending_close');
+
+  document.getElementById('setup').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+
+  if (pending) closeIssue(parseInt(pending)).then(() => loadIssues());
+  else loadIssues();
+}
+
+/* ── GitHub API ─────────────────────────────────────────────── */
+async function ghFetch(path, method = 'GET', body = null) {
+  const token = localStorage.getItem(KEY);
+  const opts = {
+    method,
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    }
+  };
+  if (body) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch('https://api.github.com' + path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+async function closeIssue(num) {
+  try {
+    await ghFetch(`/repos/${REPO}/issues/${num}`, 'PATCH', {
+      state: 'closed',
+      state_reason: 'completed'
+    });
+    showToast('✓ Task marked as done!');
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+/* ── Load issues ────────────────────────────────────────────── */
+async function loadIssues() {
+  const loading = document.getElementById('loading');
+  const content = document.getElementById('content');
+  loading.classList.remove('hidden');
+  content.classList.add('hidden');
+  content.innerHTML = '';
+
+  try {
+    const [open, closed] = await Promise.all([
+      ghFetch(`/repos/${REPO}/issues?labels=${LABEL}&state=open&per_page=100`),
+      ghFetch(`/repos/${REPO}/issues?labels=${LABEL}&state=closed&per_page=20`),
+    ]);
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const enrich = list => (list || []).map(i => ({
+      ...i,
+      dueDate: parseDue(i.body),
+      source:  parseField(i.body, 'Source'),
+    }));
+
+    const openList   = enrich(open);
+    const closedList = enrich(closed).slice(0, 10);
+
+    const overdue  = openList.filter(i => i.dueDate && i.dueDate < today);
+    const dueToday = openList.filter(i => i.dueDate && +i.dueDate === +today);
+    const upcoming = openList.filter(i => !i.dueDate || i.dueDate > today);
+
+    // header count
+    const n = openList.length;
+    document.getElementById('header-sub').textContent =
+      `Longfellow TK-8 · ${n} open task${n !== 1 ? 's' : ''}`;
+
+    if (n === 0 && closedList.length === 0) {
+      content.innerHTML = '<div class="empty"><div class="big-em">🎉</div>All clear — no open tasks!</div>';
+    } else {
+      if (overdue.length)    content.appendChild(mkSection('🔴 Overdue',  overdue,  'overdue'));
+      if (dueToday.length)   content.appendChild(mkSection('🟠 Due Today', dueToday, 'today'));
+      if (upcoming.length)   content.appendChild(mkSection('🔵 Upcoming',  upcoming, 'upcoming'));
+      if (closedList.length) content.appendChild(mkDoneSection(closedList));
+    }
+    content.appendChild(mkFooter());
+
+    loading.classList.add('hidden');
+    content.classList.remove('hidden');
+
+  } catch (e) {
+    loading.textContent = '⚠️ ' + e.message;
+    if (/401|Bad credentials/i.test(e.message)) {
+      localStorage.removeItem(KEY);
+      setTimeout(() => location.reload(), 1500);
+    }
+  }
+}
+
+/* ── Parsers ────────────────────────────────────────────────── */
+function parseDue(body) {
+  if (!body) return null;
+  const m = body.match(/\*\*Due:\*\*\s*(\d{4}-\d{2}-\d{2})/);
+  if (!m) return null;
+  const [y, mo, d] = m[1].split('-').map(Number);
+  const dt = new Date(y, mo - 1, d);
+  dt.setHours(0, 0, 0, 0);
+  return dt;
+}
+
+function parseField(body, field) {
+  if (!body) return null;
+  const m = body.match(new RegExp(`\\*\\*${field}:\\*\\*\\s*(.+)`));
+  return m ? m[1].trim() : null;
+}
+
+function fmtDate(dt) {
+  if (!dt) return 'No due date';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.round((dt - today) / 86400000);
+  if (diff === 0)  return 'Today';
+  if (diff === 1)  return 'Tomorrow';
+  if (diff === -1) return 'Yesterday';
+  if (diff < 0)   return `${Math.abs(diff)}d overdue`;
+  if (diff <= 7)  return `In ${diff} days`;
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/* ── Render helpers ─────────────────────────────────────────── */
+function mkSection(title, issues, cls) {
+  const wrap = document.createElement('div');
+  const head = document.createElement('div');
+  head.className = 'section-head';
+  head.innerHTML = `<h2 class="c-${cls}">${title}</h2><span class="pill p-${cls}">${issues.length}</span>`;
+  wrap.appendChild(head);
+  issues.forEach(i => wrap.appendChild(mkCard(i, cls)));
+  return wrap;
+}
+
+function mkCard(issue, cls) {
+  const card = document.createElement('div');
+  card.className = 'task-card';
+  card.dataset.id = issue.number;
+  const src = issue.source ? `<span>· ${esc(issue.source)}</span>` : '';
+  card.innerHTML = `
+    <div class="task-left">
+      <div class="task-title">${esc(issue.title)}</div>
+      <div class="task-meta">
+        <span class="due-badge p-${cls}">${fmtDate(issue.dueDate)}</span>
+        ${src}
+      </div>
+    </div>
+    <button class="done-btn" onclick="markDone(${issue.number}, this)">✓ Done</button>
+  `;
+  return card;
+}
+
+function mkDoneSection(issues) {
+  const wrap   = document.createElement('div');
+  const toggle = document.createElement('button');
+  toggle.className = 'done-toggle';
+  const list = document.createElement('div');
+  list.className = 'hidden';
+  list.style.marginTop = '8px';
+
+  const label = () =>
+    `✅ Completed (${issues.length}) — tap to ${list.classList.contains('hidden') ? 'show' : 'hide'}`;
+  toggle.textContent = label();
+  toggle.addEventListener('click', () => {
+    list.classList.toggle('hidden');
+    toggle.textContent = label();
+  });
+
+  issues.forEach(i => {
+    const card = document.createElement('div');
+    card.className = 'task-card is-done';
+    card.innerHTML = `
+      <div class="task-left">
+        <div class="task-title">${esc(i.title)}</div>
+        <div class="task-meta"><span>Closed</span>${i.source ? `<span>· ${esc(i.source)}</span>` : ''}</div>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  wrap.style.marginTop = '8px';
+  wrap.appendChild(toggle);
+  wrap.appendChild(list);
+  return wrap;
+}
+
+function mkFooter() {
+  const f = document.createElement('footer');
+  const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  f.innerHTML = `Last refreshed ${now} · <a href="#" onclick="resetToken();return false;">Reset token</a>`;
+  return f;
+}
+
+/* ── Actions ────────────────────────────────────────────────── */
+async function markDone(num, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+  try {
+    await ghFetch(`/repos/${REPO}/issues/${num}`, 'PATCH', {
+      state: 'closed', state_reason: 'completed'
+    });
+    const card = document.querySelector(`.task-card[data-id="${num}"]`);
+    if (card) card.remove();
+    showToast('✓ Task marked as done!');
+    // recount open tasks
+    const remaining = document.querySelectorAll('.task-card:not(.is-done)').length;
+    document.getElementById('header-sub').textContent =
+      `Longfellow TK-8 · ${remaining} open task${remaining !== 1 ? 's' : ''}`;
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '✓ Done';
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+function resetToken() {
+  if (confirm('Clear saved token and sign out?')) {
+    localStorage.removeItem(KEY);
+    location.reload();
+  }
+}
+
+/* ── Toast ──────────────────────────────────────────────────── */
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isError ? 'error' : '';
+  t.offsetHeight; // reflow
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
